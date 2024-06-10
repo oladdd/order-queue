@@ -1,6 +1,6 @@
-// App.jsx
 import React, { useState } from "react";
 import Counter from "./Counter";
+import Countdown from "./Countdown";
 
 import rowOneImage from "./assets/row1.png";
 import rowTwoImage from "./assets/row2.png";
@@ -16,6 +16,7 @@ const App = () => {
   ]);
 
   const [orderQueue, setOrderQueue] = useState([]);
+  const [currentOrderIndex, setCurrentOrderIndex] = useState(0);
 
   const increment = (name) => {
     setOrderList(
@@ -37,11 +38,18 @@ const App = () => {
 
   const handleOrder = () => {
     const currentOrder = orderList.filter((item) => item.quantity > 0);
-    const totalTime = currentOrder.reduce((sum, item) => sum + item.quantity * item.time, 0);
+    const totalTime = currentOrder.reduce(
+      (sum, item) => sum + item.quantity * item.time,
+      0
+    );
     const currentOrderList = { order: currentOrder, totalTime };
     const currentOrderQueue = orderQueue.concat(currentOrderList);
 
-    if (currentOrder.length !== 0) setOrderQueue(currentOrderQueue);
+    if (currentOrder.length !== 0) {
+      const sortedOrderQueue = currentOrderQueue.sort((a, b) => a.totalTime - b.totalTime);
+      setOrderQueue(sortedOrderQueue);
+      setCurrentOrderIndex(0); // Reset current order index when a new order is added
+    }
 
     setOrderList([
       { name: "MAGURO", quantity: 0, time: 10 },
@@ -53,10 +61,28 @@ const App = () => {
     ]);
   };
 
+  const handleTimeUpdate = (newTime) => {
+    setOrderQueue((prevQueue) => {
+      const updatedQueue = [...prevQueue];
+      if (updatedQueue.length > 0) {
+        updatedQueue[currentOrderIndex] = {
+          ...updatedQueue[currentOrderIndex],
+          totalTime: newTime,
+        };
+      }
+      return updatedQueue;
+    });
+  };
+
+  const handleComplete = () => {
+    console.log("handleComplete called");
+    setCurrentOrderIndex((prevIndex) => prevIndex + 1);
+  };
+
   return (
     <div className="flex flex-col h-screen w-screen lg:flex-row bg-[#0F3F71]">
       <div className="w-1/12"></div>
-      <div className=" grow h-full bg-white rounded-2xl place-items-center flex flex-row justify-end">
+      <div className="grow h-full bg-white rounded-2xl place-items-center flex flex-row justify-end">
         <div className="w-4/12 h-full flex flex-col px-8 pt-8 pb-4">
           <div className="text-[2.75rem] font-rammetto font-semibold drop-shadow-lg mb-3">
             <span className="text-[#F43D4A]">Mika</span>
@@ -93,7 +119,7 @@ const App = () => {
             </button>
           </div>
         </div>
-        <div className="w-[933.78px] h-full bg-[#FCBA26] rounded-l-2xl grid grid-cols-2 gap-8 px-16 pt-16 overflow-y-auto">
+        <div className="grow h-full bg-[#FCBA26] rounded-l-2xl grid grid-cols-2 gap-8 px-16 pt-16 overflow-y-auto">
           {orderQueue.map((queue, index) => (
             <div
               key={index}
@@ -102,7 +128,7 @@ const App = () => {
               <div className="bg-[#CE911B] h-[7.25rem] rounded-3xl drop-shadow-lg font-rammetto font-bold text-4xl text-white flex items-center p-8">
                 Order #{index + 1}
               </div>
-              <div className="grow h-96 flex flex-col">
+              <div className="grow h-96 flex flex-col overflow-y-auto">
                 {queue.order.map((order, orderIndex) => (
                   <div
                     key={orderIndex}
@@ -114,9 +140,20 @@ const App = () => {
                 ))}
               </div>
               <div className="flex flex-row h-32 justify-between bg-[#F9BB43] rounded-3xl drop-shadow-lg space-x-3 p-4">
-                <div className="bg-[#CE911B] h-full w-[9.75rem] text-4xl text-white font-staatliches rounded-2xl items-center flex drop-shadow-lg justify-center">
-                  TIME: {queue.totalTime} <span className="pl-1 text-3xl flex flex-col justify-end">s</span>
-                </div>
+                {index === currentOrderIndex ? (
+                  <Countdown
+                    initialTime={queue.totalTime}
+                    onTimeUpdate={handleTimeUpdate}
+                    onComplete={handleComplete}
+                  />
+                ) : (
+                  <div className="bg-[#CE911B] h-full w-[9.75rem] text-4xl text-white font-staatliches rounded-2xl items-center flex drop-shadow-lg justify-center">
+                    TIME: <span>{queue.totalTime}</span>
+                    <span className="pl-1 text-3xl flex flex-col justify-end">
+                      s
+                    </span>
+                  </div>
+                )}
                 <div className="bg-[#E88D44] h-full w-[12rem] text-[2.5rem] text-[#8B4F1F] font-staatliches rounded-2xl items-center flex drop-shadow-lg justify-center">
                   DONE: s
                 </div>
