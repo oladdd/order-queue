@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Counter from "./Counter";
 import Countdown from "./Countdown";
+import Countup from "./Countup";
 
 import rowOneImage from "./assets/row1.png";
 import rowTwoImage from "./assets/row2.png";
@@ -17,6 +18,7 @@ const App = () => {
 
   const [orderQueue, setOrderQueue] = useState([]);
   const [currentOrderIndex, setCurrentOrderIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
 
   const increment = (name) => {
     setOrderList(
@@ -42,13 +44,21 @@ const App = () => {
       (sum, item) => sum + item.quantity * item.time,
       0
     );
-    const currentOrderList = { order: currentOrder, totalTime };
+    const currentOrderList = {
+      order: currentOrder,
+      totalTime,
+      elapsedTime: 0,
+      completed: false,
+    };
     const currentOrderQueue = orderQueue.concat(currentOrderList);
 
     if (currentOrder.length !== 0) {
-      const sortedOrderQueue = currentOrderQueue.sort((a, b) => a.totalTime - b.totalTime);
+      const sortedOrderQueue = currentOrderQueue.sort(
+        (a, b) => a.totalTime - b.totalTime
+      );
       setOrderQueue(sortedOrderQueue);
       setCurrentOrderIndex(0); // Reset current order index when a new order is added
+      setPaused(false); // Resume Countup when a new order is added
     }
 
     setOrderList([
@@ -76,7 +86,53 @@ const App = () => {
 
   const handleComplete = () => {
     console.log("handleComplete called");
-    setCurrentOrderIndex((prevIndex) => prevIndex + 1);
+    setOrderQueue((prevQueue) => {
+      const updatedQueue = [...prevQueue];
+      if (updatedQueue.length > 0) {
+        updatedQueue[currentOrderIndex] = {
+          ...updatedQueue[currentOrderIndex],
+          completed: true,
+        };
+      }
+      return updatedQueue;
+    });
+    setCurrentOrderIndex((prevIndex) => {
+      const newIndex = prevIndex + 1;
+      if (newIndex >= orderQueue.length) {
+        setPaused(true); // Pause Countup when all orders are complete
+      }
+      return newIndex;
+    });
+  };
+
+  const updateElapsedTime = () => {
+    setOrderQueue((prevQueue) => {
+      const updatedQueue = prevQueue.map((item, index) =>
+        !item.completed ? { ...item, elapsedTime: item.elapsedTime + 1 } : item
+      );
+      return updatedQueue;
+    });
+  };
+
+  useEffect(() => {
+    if (!paused) {
+      const timer = setInterval(() => {
+        updateElapsedTime();
+        if (
+          orderQueue[currentOrderIndex] &&
+          orderQueue[currentOrderIndex].totalTime > 0
+        ) {
+          handleTimeUpdate(orderQueue[currentOrderIndex].totalTime - 1);
+        }
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [paused, currentOrderIndex, orderQueue]);
+
+  const formatTime = (timeInSeconds) => {
+    const minutes = Math.floor(timeInSeconds / 60);
+    const seconds = timeInSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
   return (
@@ -145,18 +201,15 @@ const App = () => {
                     initialTime={queue.totalTime}
                     onTimeUpdate={handleTimeUpdate}
                     onComplete={handleComplete}
+                    paused={paused}
                   />
                 ) : (
-                  <div className="bg-[#CE911B] h-full w-[9.75rem] text-4xl text-white font-staatliches rounded-2xl items-center flex drop-shadow-lg justify-center">
-                    TIME: <span>{queue.totalTime}</span>
-                    <span className="pl-1 text-3xl flex flex-col justify-end">
-                      s
-                    </span>
+                  <div className="bg-[#CE911B] h-full w-2/6 text-4xl text-white font-staatliches rounded-2xl items-center justify-center flex drop-shadow-lg space-x-2">
+                    <span>TIME:</span>
+                    <span>{formatTime(queue.totalTime)}</span>
                   </div>
                 )}
-                <div className="bg-[#E88D44] h-full w-[12rem] text-[2.5rem] text-[#8B4F1F] font-staatliches rounded-2xl items-center flex drop-shadow-lg justify-center">
-                  DONE: s
-                </div>
+                <Countup paused={queue.completed} elapsedTime={queue.elapsedTime} />
               </div>
             </div>
           ))}
