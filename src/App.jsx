@@ -143,7 +143,7 @@ const App = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen lg:flex-row bg-[#0F3F71] bg-[url('./src/assets/bg-blue.png')]">
+    <div className="flex flex-col h-screen w-screen lg:flex-row bg-[#0F3F71] background-image-blue">
       <div className="w-1/12"></div>
       <div className="grow h-full bg-white rounded-2xl place-items-center flex flex-row justify-end">
         <div className="w-4/12 h-full flex flex-col px-8 pt-8 pb-4">
@@ -182,7 +182,7 @@ const App = () => {
             </button>
           </div>
         </div>
-        <div className="grow h-full bg-[#FCBA26] rounded-l-2xl grid grid-cols-2 gap-8 px-16 pt-16 overflow-y-auto bg-[url('./src/assets/bg-yellow.png')]">
+        <div className="grow h-full bg-[#FCBA26] rounded-l-2xl grid grid-cols-2 gap-8 px-16 pt-16 overflow-y-auto background-image-yellow">
           {orderQueue.map((queue, index) => (
             <div
               key={index}

@@ -4,3 +4,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.background-image-blue {
+  background-image: url("/src/assets/bg-blue.png");
+}
+
+.background-image-yellow {
+  background-image: url("/src/assets/bg-yellow.png");
+}
