@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Counter from "./Counter";
 import Countdown from "./Countdown";
 import Countup from "./Countup";
@@ -19,6 +19,8 @@ const App = () => {
   const [orderQueue, setOrderQueue] = useState([]);
   const [currentOrderIndex, setCurrentOrderIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+
+  const count = useRef(1);
 
   const increment = (name) => {
     setOrderList(
@@ -49,8 +51,11 @@ const App = () => {
       totalTime,
       elapsedTime: 0,
       completed: false,
+      orderId: count.current,
     };
     const currentOrderQueue = orderQueue.concat(currentOrderList);
+
+    count.current += 1;
 
     if (currentOrder.length !== 0) {
       const sortedOrderQueue = currentOrderQueue.sort(
@@ -60,6 +65,8 @@ const App = () => {
       setCurrentOrderIndex(0); // Reset current order index when a new order is added
       setPaused(false); // Resume Countup when a new order is added
     }
+
+    console.log(currentOrderList);
 
     setOrderList([
       { name: "MAGURO", quantity: 0, time: 10 },
@@ -136,11 +143,11 @@ const App = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen lg:flex-row bg-[#0F3F71]">
+    <div className="flex flex-col h-screen w-screen lg:flex-row bg-[#0F3F71] bg-[url('./src/assets/bg-blue.png')]">
       <div className="w-1/12"></div>
       <div className="grow h-full bg-white rounded-2xl place-items-center flex flex-row justify-end">
         <div className="w-4/12 h-full flex flex-col px-8 pt-8 pb-4">
-          <div className="text-[2.75rem] font-rammetto font-semibold drop-shadow-lg mb-3">
+          <div className="text-[2.75rem] font-rammetto font-semibold drop-shadow-lg mb-6">
             <span className="text-[#F43D4A]">Mika</span>
             <span className="text-[#F4A03D]">Sushi</span>
           </div>
@@ -175,14 +182,20 @@ const App = () => {
             </button>
           </div>
         </div>
-        <div className="grow h-full bg-[#FCBA26] rounded-l-2xl grid grid-cols-2 gap-8 px-16 pt-16 overflow-y-auto">
+        <div className="grow h-full bg-[#FCBA26] rounded-l-2xl grid grid-cols-2 gap-8 px-16 pt-16 overflow-y-auto bg-[url('./src/assets/bg-yellow.png')]">
           {orderQueue.map((queue, index) => (
             <div
               key={index}
-              className="flex flex-col h-[32rem] bg-[#E1A530] rounded-3xl justify-between"
+              className={`flex flex-col h-[32rem] rounded-3xl justify-between ${
+                index === currentOrderIndex ? "bg-[#BD562A] " : "bg-[#E1A530] "
+              }`}
             >
-              <div className="bg-[#CE911B] h-[7.25rem] rounded-3xl drop-shadow-lg font-rammetto font-bold text-4xl text-white flex items-center p-8">
-                Order #{index + 1}
+              <div
+                className={` h-[7.25rem] rounded-3xl drop-shadow-lg font-rammetto font-bold text-4xl text-white flex items-center p-8 ${
+                  index === currentOrderIndex ? "bg-[#CE5C1B]" : "bg-[#CE911B]"
+                }`}
+              >
+                Order #{queue.orderId}
               </div>
               <div className="grow h-96 flex flex-col overflow-y-auto">
                 {queue.order.map((order, orderIndex) => (
@@ -195,7 +208,11 @@ const App = () => {
                   </div>
                 ))}
               </div>
-              <div className="flex flex-row h-32 justify-between bg-[#F9BB43] rounded-3xl drop-shadow-lg space-x-3 p-4">
+              <div
+                className={`flex flex-row h-32 justify-between rounded-3xl drop-shadow-lg space-x-3 p-4 ${
+                  index === currentOrderIndex ? "bg-[#994F26]" : "bg-[#F9BB43]"
+                }`}
+              >
                 {index === currentOrderIndex ? (
                   <Countdown
                     initialTime={queue.totalTime}
@@ -204,12 +221,21 @@ const App = () => {
                     paused={paused}
                   />
                 ) : (
-                  <div className="bg-[#CE911B] h-full w-2/6 text-4xl text-white font-staatliches rounded-2xl items-center justify-center flex drop-shadow-lg space-x-2">
+                  <div
+                    className={`h-full w-2/6 text-3xl text-white font-staatliches rounded-2xl items-center justify-center flex drop-shadow-lg space-x-2 ${
+                      index === currentOrderIndex
+                        ? "bg-[#CE711B]"
+                        : "bg-[#CE911B]"
+                    }`}
+                  >
                     <span>TIME:</span>
                     <span>{formatTime(queue.totalTime)}</span>
                   </div>
                 )}
-                <Countup paused={queue.completed} elapsedTime={queue.elapsedTime} />
+                <Countup
+                  paused={queue.completed}
+                  elapsedTime={queue.elapsedTime}
+                />
               </div>
             </div>
           ))}

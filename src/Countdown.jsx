@@ -31,7 +31,7 @@ const Countdown = ({ initialTime, onTimeUpdate, onComplete, paused }) => {
   };
 
   return (
-    <div className="bg-[#CE911B] h-full w-2/6 text-4xl text-white font-staatliches rounded-2xl items-center justify-center flex drop-shadow-lg space-x-2">
+    <div className="bg-[#CE711B] h-full w-2/6 text-3xl text-white font-staatliches rounded-2xl items-center justify-center flex drop-shadow-lg space-x-2">
       <span>TIME:</span>
       <span>{formatTime(time)}</span>
     </div>

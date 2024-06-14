@@ -24,7 +24,7 @@ const Countup = ({ paused, elapsedTime }) => {
   };
 
   return (
-    <div className="bg-[#E88D44] h-full w-3/6 text-[2.5rem] text-[#8B4F1F] font-staatliches rounded-2xl items-center flex drop-shadow-lg justify-center">
+    <div className={` h-full w-3/6 text-3xl text-[#8B4F1F] font-staatliches rounded-2xl items-center flex drop-shadow-lg justify-center ${paused ? "bg-[#E1A530]" : "bg-[#E88D44]"}`}>
       {paused ? "DONE" : "ELAPSED"} {formatTime(time)}
     </div>
   );
